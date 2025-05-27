@@ -2,8 +2,9 @@ import datetime as dt
 import os
 import sys
 
+import pandas as pd
 from airflow.models import DAG
-from airflow.operators.python import PythonOperator
+from airflow.providers.standard.operators.python import PythonOperator
 
 path = os.path.expanduser('~/airflow_hw')
 # Добавим путь к коду проекта в переменную окружения, чтобы он был доступен python-процессу
@@ -12,6 +13,7 @@ os.environ['PROJECT_PATH'] = path
 sys.path.insert(0, path)
 
 from modules.pipeline import pipeline
+from modules.predict import predict
 # <YOUR_IMPORTS>
 
 args = {
@@ -24,12 +26,18 @@ args = {
 
 with DAG(
         dag_id='car_price_prediction',
-        schedule_interval="00 15 * * *",
+        schedule="00 15 * * *",
         default_args=args,
 ) as dag:
     pipeline = PythonOperator(
         task_id='pipeline',
         python_callable=pipeline,
+        dag=dag
     )
     # <YOUR_CODE>
-
+    predictor = PythonOperator(
+        task_id='predictor',
+        python_callable=predict,
+        dag=dag
+    )
+    pipeline >> predictor

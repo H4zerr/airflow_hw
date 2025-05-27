@@ -18,8 +18,7 @@ from sklearn.svm import SVC
 # Укажем путь к файлам проекта:
 # -> $PROJECT_PATH при запуске в Airflow
 # -> иначе - текущая директория при локальном запуске
-path = os.environ.get('PROJECT_PATH', '.')
-
+path = os.environ.get('PROJECT_PATH', '..')
 
 def filter_data(df: pd.DataFrame) -> pd.DataFrame:
     columns_to_drop = [
@@ -124,7 +123,7 @@ def pipeline() -> None:
     model_filename = f'{path}/data/models/cars_pipe_{datetime.now().strftime("%Y%m%d%H%M")}.pkl'
 
     with open(model_filename, 'wb') as file:
-        dill.dump(best_pipe, file)
+        dill.dump(best_pipe, file, recurse=True)
 
     logging.info(f'Model is saved as {model_filename}')
 
